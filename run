@@ -1,0 +1,3 @@
+#!/bin/bash
+LD_LIBRARY_PATH=/home/tswhison/tmp/redblacktree \
+ /home/tswhison/tmp/redblacktree/main
