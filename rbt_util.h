@@ -25,14 +25,6 @@ do                                                                 \
 	___a < ___b ? ___a : ___b; \
 })
 
-#define redblack_tree_successor_node(__n)     \
-({                                            \
-	typeof(__n) successor = (__n)->right; \
-	while(successor->left)                \
-		successor = successor->left;  \
-	successor;                            \
-})
-
 static inline redblack_tree_color color(redblack_tree_node *n)
 {
 	if (!n) // leaves are black
@@ -150,6 +142,28 @@ static inline redblack_tree_node * ror(redblack_tree_node **root,
 	if (n == *root)
 		*root = nnew;
 	return nnew;
+}
+
+static inline int is_leaf(redblack_tree_node *n)
+{
+	rbt_assert(n);
+	return (n->left == NULL) && (n->right == NULL);
+}
+
+static inline int is_internal(redblack_tree_node *n)
+{
+	rbt_assert(n);
+	return (n->left != NULL) && (n->right != NULL);
+}
+
+static inline redblack_tree_node * successor(redblack_tree_node *n)
+{
+	rbt_assert(n);
+	rbt_assert(n->right);
+	n = n->right;
+	while (n->left)
+		n = n->left;
+	return n;
 }
 
 #endif // __RBT_UTIL_H__

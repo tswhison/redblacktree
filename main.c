@@ -167,7 +167,7 @@ void visualize_calc_widths(redblack_tree_node *node, void *context)
 	if (node->right)
 		width += (int64_t) node->right->context;
 
-	node->context = (void *) (3 + width/2);
+	node->context = (void *) (12 + width/2);
 }
 
 void visualize_print_tree(redblack_tree_node *node, void *context, int level)
@@ -180,9 +180,11 @@ void visualize_print_tree(redblack_tree_node *node, void *context, int level)
 		*last_level = level;
 	}
 
-	sprintf(fmt, "%%%du%%c", (int) (int64_t) node->context);
+	sprintf(fmt, "%%%du%%c[%%p]", (int) (int64_t) node->context);
 
-	printf(fmt, (unsigned) (uint64_t) node->item, node->color == RBT_RED ? 'r' : 'b');
+	printf(fmt, (unsigned) (uint64_t) node->item,
+		    node->color == RBT_RED ? 'r' : 'b',
+		    node);
 }
 
 void visualize_tree(redblack_tree *t)
@@ -190,7 +192,7 @@ void visualize_tree(redblack_tree *t)
 	int last_level = 0;
 	redblack_tree_post_order(t, visualize_calc_widths, NULL);
 	redblack_tree_level_order(t, visualize_print_tree, &last_level);
-	printf("\n");
+	printf("\n\n");
 }
 
 void insert_and_remove_stress(void)
@@ -225,17 +227,16 @@ void insert_and_remove_stress(void)
 			}
 
 			reset_randomizer(r);
-#if 1
+#if 0
 //			visualize_tree(&t);
-//			printf("\n");
 			redblack_tree_destroy(&t);
 #else
 			// remove each item, randomly
 			for (i = 0 ; i < num_items ; ++i) {
 				item = get_random(r);
-				avl_tree_remove(&t, (void *) (int64_t) item);
-				assert(is_avl_tree(&t));
-				assert(avl_tree_num_items(&t) == ((uint32_t)num_items - ((uint32_t)i+1)));
+				redblack_tree_remove(&t, (void *) (int64_t) item);
+				assert(is_redblack_tree(&t));
+				assert(redblack_tree_num_items(&t) == ((uint32_t)num_items - ((uint32_t)i+1)));
 			}
 #endif
 			free_randomizer(r);

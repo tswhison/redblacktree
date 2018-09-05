@@ -4,6 +4,23 @@
 static inline void redblack_tree_insert_repair_case_4_2(redblack_tree_node **root,
 							redblack_tree_node *n)
 {
+/*
+** Case 4.2:
+**
+** Left Case:
+**    Gb         Pb
+**   /  \       /  \
+**  Pr  Ub     Nr  Gr
+**  /               \
+** Nr               Ub
+**
+** Right Case:
+**    Gb         Pb
+**   /  \       /  \
+**  Ub  Pr     Gr  Nr
+**       \     /
+**       Nr   Ub
+*/
 	redblack_tree_node *p = parent(n);
 	redblack_tree_node *gp = parent(p);
 
@@ -33,6 +50,7 @@ static void redblack_tree_insert_repair(redblack_tree_node **root,
 	} else if (p->color == RBT_BLACK) {
 /*
 ** Case 2: the parent is black, so there is no color violation.
+**         (nothing to do)
 */
 		return;
 	} else if (u && u->color == RBT_RED) {
@@ -54,13 +72,21 @@ static void redblack_tree_insert_repair(redblack_tree_node **root,
 		redblack_tree_insert_repair(root, gp);
 	} else {
 /*
-** Case 4: the parent is red, the uncle is black.
+** Case 4.1: the parent is red, the uncle is black.
 **
-**      Gb          Gr
+** Left-Right Case:
+**      Gb          Gb
 **     /  \        /  \
-**    Pr  Ur      Pb  Ub
-**   /           /
-**  Nr          Nr
+**    Pr  Ub      Nr  Ub
+**     \          /
+**     Nr        Pr
+**
+** Right-Left Case:
+**      Gb          Gb
+**     /  \        /  \
+**    Ub  Pr      Ub  Nr
+**        /            \
+**       Nr            Pr
 */
 		redblack_tree_node *gp = parent(p);
 
