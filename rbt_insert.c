@@ -1,7 +1,8 @@
 #include "rbt.h"
 #include "rbt_util.h"
 
-static inline void redblack_tree_insert_repair_case_4_2(redblack_tree_node *n)
+static inline void redblack_tree_insert_repair_case_4_2(redblack_tree_node **root,
+							redblack_tree_node *n)
 {
 	redblack_tree_node *p = parent(n);
 	redblack_tree_node *gp = parent(p);
@@ -10,15 +11,16 @@ static inline void redblack_tree_insert_repair_case_4_2(redblack_tree_node *n)
 	rbt_assert(gp);
 
 	if (n == p->left)
-		ror(gp);
+		ror(root, gp);
 	else
-		rol(gp);
+		rol(root, gp);
 
 	p->color = RBT_BLACK;
 	gp->color = RBT_RED;
 }
 
-static void redblack_tree_insert_repair(redblack_tree_node *n)
+static void redblack_tree_insert_repair(redblack_tree_node **root,
+					redblack_tree_node *n)
 {
 	redblack_tree_node *p = parent(n);
 	redblack_tree_node *u = uncle(n);
@@ -49,7 +51,7 @@ static void redblack_tree_insert_repair(redblack_tree_node *n)
 		redblack_tree_node *gp = parent(p);
 		p->color = u->color = RBT_BLACK;
 		gp->color = RBT_RED;
-		redblack_tree_insert_repair(gp);
+		redblack_tree_insert_repair(root, gp);
 	} else {
 /*
 ** Case 4: the parent is red, the uncle is black.
@@ -64,14 +66,14 @@ static void redblack_tree_insert_repair(redblack_tree_node *n)
 
 		rbt_assert(gp);
 
-		if (n == gp->left->right) {
-			rol(p);
+		if (gp->left && n == gp->left->right) {
+			rol(root, p);
 			n = n->left;
-		} else if (n == gp->right->left) {
-			ror(p);
+		} else if (gp->right && n == gp->right->left) {
+			ror(root, p);
 			n = n->right;
 		}
-		redblack_tree_insert_repair_case_4_2(n);
+		redblack_tree_insert_repair_case_4_2(root, n);
 	}
 }
 
@@ -106,7 +108,7 @@ int redblack_tree_insert(redblack_tree *t, void *item)
 	(*node)->color = RBT_RED;
 	inserted = 1;
 
-	redblack_tree_insert_repair(*node);
+	redblack_tree_insert_repair(&t->root, *node);
 
 	return inserted;
 }

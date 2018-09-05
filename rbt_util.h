@@ -25,6 +25,14 @@ do                                                                 \
 	___a < ___b ? ___a : ___b; \
 })
 
+#define redblack_tree_successor_node(__n)     \
+({                                            \
+	typeof(__n) successor = (__n)->right; \
+	while(successor->left)                \
+		successor = successor->left;  \
+	successor;                            \
+})
+
 static inline redblack_tree_color color(redblack_tree_node *n)
 {
 	if (!n) // leaves are black
@@ -72,7 +80,8 @@ static inline redblack_tree_node * uncle(redblack_tree_node *n)
 **                T1 T2
 */
 
-static inline redblack_tree_node * rol(redblack_tree_node *n)
+static inline redblack_tree_node * rol(redblack_tree_node **root,
+				       redblack_tree_node *n)
 {
 	redblack_tree_node *nnew;
 	redblack_tree_node *p;
@@ -97,6 +106,8 @@ static inline redblack_tree_node * rol(redblack_tree_node *n)
 		}
 	}
 	nnew->parent = p;
+	if (n == *root)
+		*root = nnew;
 	return nnew;
 }
 
@@ -110,7 +121,8 @@ static inline redblack_tree_node * rol(redblack_tree_node *n)
 **                          T3 T4
 */
 
-static inline redblack_tree_node * ror(redblack_tree_node *n)
+static inline redblack_tree_node * ror(redblack_tree_node **root,
+				       redblack_tree_node *n)
 {
 	redblack_tree_node *nnew;
 	redblack_tree_node *p;
@@ -135,6 +147,8 @@ static inline redblack_tree_node * ror(redblack_tree_node *n)
 		}
 	}
 	nnew->parent = p;
+	if (n == *root)
+		*root = nnew;
 	return nnew;
 }
 

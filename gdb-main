@@ -1,3 +1,3 @@
 #!/bin/bash
-LD_LIBRARY_PATH=/home/tswhison/tmp/redblacktree \
- gdbtui -tty=/dev/null --args /home/tswhison/tmp/redblacktree/main
+LD_LIBRARY_PATH=/home/tswhison/repos/redblacktree \
+ gdbtui -tty=/dev/null --args /home/tswhison/repos/redblacktree/main

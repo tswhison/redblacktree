@@ -106,18 +106,6 @@ void verify_red_rule(redblack_tree_node *n, void *context)
 
 }
 
-void rbt_in_order_node(redblack_tree_node *node,
-		       void (*visitor)(redblack_tree_node *n, void *context),
-		       void *context)
-{
-	if (!node)
-		return;
-
-	rbt_in_order_node(node->left, visitor, context);
-	visitor(node, context);
-	rbt_in_order_node(node->right, visitor, context);
-}
-
 int rbt_max_black_nodes(redblack_tree_node *node)
 {
 	int is_black = 0;
@@ -160,7 +148,7 @@ int is_redblack_tree(redblack_tree *t)
 	if (!t->root)
 		return 1;
 
-	rbt_in_order_node(t->root, verify_red_rule, &red_rule);
+	redblack_tree_in_order(t, verify_red_rule, &red_rule);
 
 	if (rbt_max_black_nodes(t->root) !=
 	    rbt_min_black_nodes(t->root))
@@ -169,14 +157,50 @@ int is_redblack_tree(redblack_tree *t)
 	return red_rule && black_rule;
 }
 
+void visualize_calc_widths(redblack_tree_node *node, void *context)
+{
+	int64_t width = 0;
+
+	if (node->left)
+		width += (int64_t) node->left->context;
+
+	if (node->right)
+		width += (int64_t) node->right->context;
+
+	node->context = (void *) (3 + width/2);
+}
+
+void visualize_print_tree(redblack_tree_node *node, void *context, int level)
+{
+	char fmt[32];
+	int *last_level = (int *) context;
+
+	if (level != *last_level) {
+		printf("\n");
+		*last_level = level;
+	}
+
+	sprintf(fmt, "%%%du%%c", (int) (int64_t) node->context);
+
+	printf(fmt, (unsigned) (uint64_t) node->item, node->color == RBT_RED ? 'r' : 'b');
+}
+
+void visualize_tree(redblack_tree *t)
+{
+	int last_level = 0;
+	redblack_tree_post_order(t, visualize_calc_widths, NULL);
+	redblack_tree_level_order(t, visualize_print_tree, &last_level);
+	printf("\n");
+}
+
 void insert_and_remove_stress(void)
 {
 	redblack_tree t;
-//	int repetitions = 4096;
-	int repetitions = 1;
+	int repetitions = 4096;
+//	int repetitions = 1;
 	int num_items;
-//	int max_items = 512;
-	int max_items = 8;
+	int max_items = 512;
+//	int max_items = 16;
 	int j;
 	int item;
 	int i;
@@ -202,6 +226,8 @@ void insert_and_remove_stress(void)
 
 			reset_randomizer(r);
 #if 1
+//			visualize_tree(&t);
+//			printf("\n");
 			redblack_tree_destroy(&t);
 #else
 			// remove each item, randomly
@@ -230,6 +256,9 @@ void test_rbt_util(void)
 	redblack_tree_node E;
 	redblack_tree_node F;
 	redblack_tree_node G;
+	redblack_tree_node *root;
+
+	root = &D;
 
 	A.left = A.right = NULL;
 	A.parent = &B;
@@ -303,13 +332,14 @@ void test_rbt_util(void)
 **                     / \
 **                    Ar  Cr
 */
-	assert(rol(&D) == &F);
+	assert(rol(&root, &D) == &F);
 	assert(E.parent == &D);
 	assert(D.right == &E);
 	assert(D.parent == &F);
 	assert(F.left == &D);
 	assert(F.right == &G);
 	assert(F.parent == NULL);
+	assert(root == &F);
 
 /*
 **       Fb                 Dr
@@ -320,7 +350,7 @@ void test_rbt_util(void)
 **  / \
 ** Ar  Cr
 */
-	assert(ror(&F) == &D);
+	assert(ror(&root, &F) == &D);
 	assert(E.parent == &F);
 	assert(D.right == &F);
 	assert(D.left == &B);
@@ -328,6 +358,7 @@ void test_rbt_util(void)
 	assert(F.left == &E);
 	assert(F.right == &G);
 	assert(F.parent == &D);
+	assert(root == &D);
 }
 
 void simple_insert_and_level_order(void)

@@ -11,6 +11,7 @@ typedef enum _redblack_tree_color
 
 typedef struct _redblack_tree_node {
 	void *item;
+	void *context;
 	struct _redblack_tree_node *parent;
 	struct _redblack_tree_node *left;
 	struct _redblack_tree_node *right;
@@ -42,19 +43,19 @@ uint32_t redblack_tree_num_items(redblack_tree *t);
 // 1 if found, 0 if not
 int redblack_tree_find(redblack_tree *t,
 		       void *item,
-		       void (*visitor)(void *item, void *context),
+		       void (*visitor)(redblack_tree_node *node, void *context),
 		       void *context);
 
 void redblack_tree_pre_order(redblack_tree *t,
-			     void (*visitor)(void *item, void *context),
+			     void (*visitor)(redblack_tree_node *node, void *context),
 			     void *context);
 
 void redblack_tree_in_order(redblack_tree *t,
-			    void (*visitor)(void *item, void *context),
+			    void (*visitor)(redblack_tree_node *node, void *context),
 			    void *context);
 
 void redblack_tree_post_order(redblack_tree *t,
-			      void (*visitor)(void *item, void *context),
+			      void (*visitor)(redblack_tree_node *node, void *context),
 			      void *context);
 
 void redblack_tree_level_order(redblack_tree *t,
@@ -62,13 +63,5 @@ void redblack_tree_level_order(redblack_tree *t,
 			       void *context);
 
 uint32_t redblack_tree_height(redblack_tree *t);
-
-#define redblack_tree_successor_node(__n)     \
-({                                            \
-	typeof(__n) successor = (__n)->right; \
-	while(successor->left)                \
-		successor = successor->left;  \
-	successor;                            \
-})
 
 #endif // __RBT_H__

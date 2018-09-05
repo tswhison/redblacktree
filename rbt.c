@@ -26,6 +26,7 @@ static void redblack_tree_destroy_node(redblack_tree *t, redblack_tree_node *nod
 void redblack_tree_destroy(redblack_tree *t)
 {
 	redblack_tree_destroy_node(t, t->root);
+	t->root = NULL;
 }
 
 static uint32_t redblack_tree_num_items_node(redblack_tree_node *node)
@@ -43,7 +44,7 @@ uint32_t redblack_tree_num_items(redblack_tree *t)
 
 int redblack_tree_find(redblack_tree *t,
 		       void *item,
-		       void (*visitor)(void *item, void *context),
+		       void (*visitor)(redblack_tree_node *node, void *context),
 		       void *context)
 {
 	redblack_tree_node *node;
@@ -60,7 +61,7 @@ int redblack_tree_find(redblack_tree *t,
 		} else if (res > 0) {
 			node = node->right;
 		} else {
-			visitor(node->item, context);
+			visitor(node, context);
 			return 1;
 		}
 
@@ -70,28 +71,28 @@ int redblack_tree_find(redblack_tree *t,
 }
 
 static void redblack_tree_pre_order_node(redblack_tree *t,
-					 void (*visitor)(void *item, void *context),
+					 void (*visitor)(redblack_tree_node *node, void *context),
 					 void *context,
 					 redblack_tree_node *node)
 {
 	if (!node)
 		return;
 
-	visitor(node->item, context);
+	visitor(node, context);
 
 	redblack_tree_pre_order_node(t, visitor, context, node->left);
 	redblack_tree_pre_order_node(t, visitor, context, node->right);
 }
 
 void redblack_tree_pre_order(redblack_tree *t,
-			     void (*visitor)(void *item, void *context),
+			     void (*visitor)(redblack_tree_node *node, void *context),
 			     void *context)
 {
 	redblack_tree_pre_order_node(t, visitor, context, t->root);
 }
 
 static void redblack_tree_in_order_node(redblack_tree *t,
-					void (*visitor)(void *item, void *context),
+					void (*visitor)(redblack_tree_node *node, void *context),
 					void *context,
 					redblack_tree_node *node)
 {
@@ -100,20 +101,20 @@ static void redblack_tree_in_order_node(redblack_tree *t,
 
 	redblack_tree_in_order_node(t, visitor, context, node->left);
 
-	visitor(node->item, context);
+	visitor(node, context);
 
 	redblack_tree_in_order_node(t, visitor, context, node->right);
 }
 
 void redblack_tree_in_order(redblack_tree *t,
-			    void (*visitor)(void *item, void *context),
+			    void (*visitor)(redblack_tree_node *node, void *context),
 			    void *context)
 {
 	redblack_tree_in_order_node(t, visitor, context, t->root);
 }
 
 static void redblack_tree_post_order_node(redblack_tree *t,
-					  void (*visitor)(void *item, void *context),
+					  void (*visitor)(redblack_tree_node *node, void *context),
 					  void *context,
 					  redblack_tree_node *node)
 {
@@ -124,11 +125,11 @@ static void redblack_tree_post_order_node(redblack_tree *t,
 
 	redblack_tree_post_order_node(t, visitor, context, node->right);
 
-	visitor(node->item, context);
+	visitor(node, context);
 }
 
 void redblack_tree_post_order(redblack_tree *t,
-			      void (*visitor)(void *item, void *context),
+			      void (*visitor)(redblack_tree_node *node, void *context),
 			      void *context)
 {
 	redblack_tree_post_order_node(t, visitor, context, t->root);
@@ -212,7 +213,7 @@ void redblack_tree_level_order(redblack_tree *t,
 	free(queue_array);
 }
 
-uint32_t redblack_tree_height_node(redblack_tree_node *node)
+static uint32_t redblack_tree_height_node(redblack_tree_node *node)
 {
 	if (!node)
 		return 0;
