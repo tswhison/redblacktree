@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if [ -d cov ]; then
+  printf "directory cov exists\n"
+  exit 1
+fi
+
+mkdir cov
+cp *.c cov
+cp *.h cov
+cp coverage.mak cov
+cd cov
+
+make -f coverage.mak
+lcov --directory . --zerocounters
+lcov --capture --initial --directory . -o cov.base
+
+LD_LIBRARY_PATH=${PWD} ./main
+
+find . -iname "*.gcda" -exec chmod 644 '{}' \;
+find . -iname "*.gcno" -exec chmod 644 '{}' \;
+
+lcov --directory . --capture --output-file cov.info
+lcov --add-tracefile cov.base --add-tracefile cov.info --output-file cov.total
+genhtml --function-coverage -o html cov.total

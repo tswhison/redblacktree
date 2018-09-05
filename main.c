@@ -198,10 +198,10 @@ void visualize_tree(redblack_tree *t)
 void insert_and_remove_stress(void)
 {
 	redblack_tree t;
-	int repetitions = 4096;
-//	int repetitions = 1;
+	int repetitions = 10000;
+//	int repetitions = 5;
 	int num_items;
-	int max_items = 512;
+	int max_items = 128;
 //	int max_items = 16;
 	int j;
 	int item;
@@ -241,8 +241,11 @@ void insert_and_remove_stress(void)
 #endif
 			free_randomizer(r);
 		}
-		printf(".");
-		fflush(stdout);
+
+		if (!(j % 100)) {
+			printf(".");
+			fflush(stdout);
+		}
 	}
 
 	redblack_tree_destroy(&t);
@@ -362,46 +365,9 @@ void test_rbt_util(void)
 	assert(root == &D);
 }
 
-void simple_insert_and_level_order(void)
-{
-	redblack_tree t;
-
-	redblack_tree_init(&t, 
-		      my_allocate_redblack_node,
-		      my_free_redblack_node,
-		      my_int_compare);
-
-	redblack_tree_insert(&t, (void *) 20);
-	assert(t.root->item == (void *) 20);
-	assert(t.root->parent == NULL);
-	assert(t.root->left == NULL);
-	assert(t.root->right == NULL);
-
-	redblack_tree_insert(&t, (void *) 10);
-	assert(t.root->parent == NULL);
-	assert(t.root->right == NULL);
-	assert(t.root->left->item == (void *) 10);
-	assert(t.root->left->parent == t.root);
-	assert(t.root->left->left == NULL);
-	assert(t.root->left->right == NULL);
-
-	redblack_tree_insert(&t, (void *) 30);
-	assert(t.root->parent == NULL);
-	assert(t.root->right->item == (void *) 30);
-	assert(t.root->right->parent == t.root);
-	assert(t.root->right->left == NULL);
-	assert(t.root->right->right == NULL);
-
-
-
-	redblack_tree_destroy(&t);
-}
-
 int main(int argc, char *argv[])
 {
 	test_rbt_util();
-//	simple_insert_and_level_order();
 	insert_and_remove_stress();
-
 	return 0;
 }
