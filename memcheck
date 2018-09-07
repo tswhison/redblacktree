@@ -1,0 +1,28 @@
+#!/bin/bash
+
+if [ -d mem ]; then
+  printf "directory mem exists\n"
+  exit 1
+fi
+
+mkdir mem
+cp *.c mem
+cp *.h mem
+cp memcheck.mak mem
+cd mem
+
+make -f memcheck.mak
+
+LD_LIBRARY_PATH=${PWD} \
+valgrind \
+  -v \
+  --log-file=memcheck.log \
+  --tool=memcheck \
+  --leak-check=full \
+  --undef-value-errors=yes \
+  --track-origins=yes \
+  --show-leak-kinds=all \
+  --leak-check-heuristics=all \
+  --malloc-fill=0xa1 \
+  --free-fill=0xfe \
+  ./main

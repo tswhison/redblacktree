@@ -204,11 +204,14 @@ void visualize_tree(redblack_tree *t)
 void insert_and_remove_stress(void)
 {
 	redblack_tree t;
-	int repetitions = 10000;
-//	int repetitions = 5;
-	int num_items;
+#ifdef MEMCHECK
+	int repetitions = 1000;
 	int max_items = 128;
-//	int max_items = 16;
+#else
+	int repetitions = 10000;
+	int max_items = 128;
+#endif // MEMCHECK
+	int num_items;
 	int j;
 	int item;
 	int i;

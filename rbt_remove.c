@@ -1,8 +1,8 @@
 #include "rbt.h"
 #include "rbt_util.h"
 
-static inline void redblack_tree_remove_case6(redblack_tree_node **root,
-					      redblack_tree_node *node)
+static inline void redblack_tree_remove_repair_case6(redblack_tree_node **root,
+						     redblack_tree_node *node)
 {
 	redblack_tree_node *s = sibling(node);
 
@@ -22,8 +22,8 @@ static inline void redblack_tree_remove_case6(redblack_tree_node **root,
 	}
 }
 
-static inline void redblack_tree_remove_case5(redblack_tree_node **root,
-					      redblack_tree_node *node)
+static inline void redblack_tree_remove_repair_case5(redblack_tree_node **root,
+						     redblack_tree_node *node)
 {
 	redblack_tree_node *s = sibling(node);
 
@@ -43,11 +43,11 @@ static inline void redblack_tree_remove_case5(redblack_tree_node **root,
 		}
 	}
 
-	redblack_tree_remove_case6(root, node);
+	redblack_tree_remove_repair_case6(root, node);
 }
 
-static inline void redblack_tree_remove_case4(redblack_tree_node **root,
-					      redblack_tree_node *node)
+static inline void redblack_tree_remove_repair_case4(redblack_tree_node **root,
+						     redblack_tree_node *node)
 {
 	redblack_tree_node *s = sibling(node);
 
@@ -59,14 +59,14 @@ static inline void redblack_tree_remove_case4(redblack_tree_node **root,
 		s->color = RBT_RED;
 		node->parent->color = RBT_BLACK;
 	} else
-		redblack_tree_remove_case5(root, node);
+		redblack_tree_remove_repair_case5(root, node);
 }
 
-static inline void redblack_tree_remove_case1(redblack_tree_node **root,
-					      redblack_tree_node *n);
+static inline void redblack_tree_remove_repair_case1(redblack_tree_node **root,
+						     redblack_tree_node *n);
 
-static inline void redblack_tree_remove_case3(redblack_tree_node **root,
-					      redblack_tree_node *node)
+static inline void redblack_tree_remove_repair_case3(redblack_tree_node **root,
+						     redblack_tree_node *node)
 {
 	redblack_tree_node *s = sibling(node);
 
@@ -76,13 +76,13 @@ static inline void redblack_tree_remove_case3(redblack_tree_node **root,
 	    (color(s->left) == RBT_BLACK) &&
 	    (color(s->right) == RBT_BLACK)) {
 		s->color = RBT_RED;
-		redblack_tree_remove_case1(root, node->parent);
+		redblack_tree_remove_repair_case1(root, node->parent);
 	} else
-		redblack_tree_remove_case4(root, node);
+		redblack_tree_remove_repair_case4(root, node);
 }
 
-static inline void redblack_tree_remove_case2(redblack_tree_node **root,
-					      redblack_tree_node *node)
+static inline void redblack_tree_remove_repair_case2(redblack_tree_node **root,
+						     redblack_tree_node *node)
 {
 	redblack_tree_node *s = sibling(node);
 
@@ -94,14 +94,14 @@ static inline void redblack_tree_remove_case2(redblack_tree_node **root,
 		else
 			ror(root, node->parent);
 	}
-	redblack_tree_remove_case3(root, node);
+	redblack_tree_remove_repair_case3(root, node);
 }
 
-static inline void redblack_tree_remove_case1(redblack_tree_node **root,
-					      redblack_tree_node *node)
+static inline void redblack_tree_remove_repair_case1(redblack_tree_node **root,
+						     redblack_tree_node *node)
 {
 	if (node->parent)
-		redblack_tree_remove_case2(root, node);
+		redblack_tree_remove_repair_case2(root, node);
 }
 
 static void redblack_tree_remove_node(redblack_tree *t,
@@ -136,7 +136,7 @@ static void redblack_tree_remove_node(redblack_tree *t,
 
 	if (node->color == RBT_BLACK) {
 		node->color = color(child);
-		redblack_tree_remove_case1(&t->root, node);
+		redblack_tree_remove_repair_case1(&t->root, node);
 	}
 
 	if (!node->parent)
