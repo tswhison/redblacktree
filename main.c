@@ -5,21 +5,6 @@
 #include "rbt.h"
 #include "rbt_util.h"
 
-#if 0
-
-void print_tree_item(avl_tree_node *node, void *context, int level)
-{
-	int *last_level = (int *) context;
-
-	if (level > *last_level) {
-		printf("\n");
-		*last_level = level;
-	}
-
-	printf("%d ", (int) (int64_t) node->item);
-}
-#endif
-
 redblack_tree_node * my_allocate_redblack_node(void *item)
 {
 	redblack_tree_node *node = (redblack_tree_node *)
@@ -30,15 +15,21 @@ redblack_tree_node * my_allocate_redblack_node(void *item)
 	return node;
 }
 
+redblack_tree_node * null_allocate_redblack_node(void *item)
+{
+	(void) item;
+	return NULL;
+}
+
 void my_free_redblack_node(redblack_tree_node *node)
 {
 	free(node);
 }
 
-int my_int_compare(void *a, void *b)
+int64_t my_int_compare(void *a, void *b)
 {
-	int ia = (int) (int64_t) a;
-	int ib = (int) (int64_t) b;
+	int64_t ia = (int64_t) a;
+	int64_t ib = (int64_t) b;
 	return ia - ib;
 }
 
@@ -116,8 +107,8 @@ int rbt_max_black_nodes(redblack_tree_node *node)
 	if (node->color == RBT_BLACK)
 		is_black = 1;
 
-	return is_black + rbt_max(rbt_max_black_nodes(node->left),
-				  rbt_max_black_nodes(node->right));
+	return is_black + redblack_tree_max(rbt_max_black_nodes(node->left),
+					    rbt_max_black_nodes(node->right));
 }
 
 int rbt_min_black_nodes(redblack_tree_node *node)
@@ -130,8 +121,8 @@ int rbt_min_black_nodes(redblack_tree_node *node)
 	if (node->color == RBT_BLACK)
 		is_black = 1;
 
-	return is_black + rbt_min(rbt_min_black_nodes(node->left),
-				  rbt_min_black_nodes(node->right));
+	return is_black + redblack_tree_min(rbt_min_black_nodes(node->left),
+					    rbt_min_black_nodes(node->right));
 }
 
 int is_redblack_tree(redblack_tree *t)
@@ -302,7 +293,7 @@ void test_rbt_util(void)
 ** Ar  Cr  Er   Gr
 */
 
-	assert(rbt_max(1, 2) == 2);
+	assert(redblack_tree_max(1, 2) == 2);
 
 	assert(color(&D) == RBT_RED);
 	assert(color(A.left) == RBT_BLACK);
@@ -365,9 +356,132 @@ void test_rbt_util(void)
 	assert(root == &D);
 }
 
+void null_visitor(redblack_tree_node *node, void *context)
+{
+	int *called = (int *) context;
+	(void) node;
+	*called = 1;
+}
+
+typedef struct _visit_sequence {
+	int i;
+	int item_sequence[3];
+} visit_sequence;
+
+void sequence_visitor(redblack_tree_node *node, void *context)
+{
+	visit_sequence *seq = (visit_sequence *) context;
+	assert(seq->item_sequence[seq->i++] == (int) (int64_t) node->item);
+}
+
+void sequence_visitor_level(redblack_tree_node *node, void *context, int level)
+{
+	visit_sequence *seq = (visit_sequence *) context;
+	(void) level;
+	assert(seq->item_sequence[seq->i++] == (int) (int64_t) node->item);
+}
+
+void other_coverage(void)
+{
+	redblack_tree t;
+	visit_sequence seq;
+	int called = 0;
+	int i;
+
+	redblack_tree_init(&t, 
+		      my_allocate_redblack_node,
+		      my_free_redblack_node,
+		      my_int_compare);
+	assert(!t.root);
+
+	redblack_tree_destroy(&t);
+	assert(!t.root);
+	assert(0 == redblack_tree_num_items(&t));
+	called = 0;
+	assert(!redblack_tree_find(&t, (void *) 1, null_visitor, &called));
+	assert(!called);
+	assert(0 == redblack_tree_height(&t));
+
+	seq.i = 0;
+	redblack_tree_pre_order(&t, sequence_visitor, &seq);
+	redblack_tree_in_order(&t, sequence_visitor, &seq);
+	redblack_tree_post_order(&t, sequence_visitor, &seq);
+	redblack_tree_level_order(&t, sequence_visitor_level, &seq);
+	assert(0 == seq.i);
+
+	assert(redblack_tree_insert(&t, (void *) 1));
+	assert(redblack_tree_insert(&t, (void *) 2));
+	assert(redblack_tree_insert(&t, (void *) 0));
+
+	// duplicates not allowed
+	assert(!redblack_tree_insert(&t, (void *) 0));
+	assert(3 == redblack_tree_num_items(&t));
+	assert(redblack_tree_find(&t, (void *) 2, NULL, NULL));
+	assert(!redblack_tree_find(&t, (void *) 3, NULL, NULL));
+
+	called = 0;
+	assert(redblack_tree_find(&t, (void *) 0, null_visitor, &called));
+	assert(called);
+	called = 0;
+	assert(redblack_tree_find(&t, (void *) 1, null_visitor, &called));
+	assert(called);
+	called = 0;
+	assert(redblack_tree_find(&t, (void *) 2, null_visitor, &called));
+	assert(called);
+
+	// test pre-order traversal
+	seq.i = 0;
+	seq.item_sequence[0] = 1;
+	seq.item_sequence[1] = 0;
+	seq.item_sequence[2] = 2;
+	redblack_tree_pre_order(&t, sequence_visitor, &seq);
+	assert(3 == seq.i);
+
+	// test in-order traversal
+	seq.i = 0;
+	seq.item_sequence[0] = 0;
+	seq.item_sequence[1] = 1;
+	seq.item_sequence[2] = 2;
+	redblack_tree_in_order(&t, sequence_visitor, &seq);
+	assert(3 == seq.i);
+
+	// test post-order traversal
+	seq.i = 0;
+	seq.item_sequence[0] = 0;
+	seq.item_sequence[1] = 2;
+	seq.item_sequence[2] = 1;
+	redblack_tree_post_order(&t, sequence_visitor, &seq);
+	assert(3 == seq.i);
+
+	// test level-order traversal
+	seq.i = 0;
+	seq.item_sequence[0] = 1;
+	seq.item_sequence[1] = 0;
+	seq.item_sequence[2] = 2;
+	redblack_tree_level_order(&t, sequence_visitor_level, &seq);
+	assert(3 == seq.i);
+
+	for (i = 3 ; i < 10 ; ++i)
+		assert(redblack_tree_insert(&t, (void *) (int64_t) i));
+
+	visualize_tree(&t);
+
+	assert(!redblack_tree_remove(&t, (void *) (int64_t) 99));
+
+	t.allocate_node = null_allocate_redblack_node;
+	assert(!redblack_tree_insert(&t, (void *) (int64_t) 10));
+
+	redblack_tree_destroy(&t);
+	assert(!t.root);
+
+	rol(NULL, NULL);
+	ror(NULL, NULL);
+}
+
 int main(int argc, char *argv[])
 {
 	test_rbt_util();
 	insert_and_remove_stress();
+	other_coverage();
 	return 0;
 }

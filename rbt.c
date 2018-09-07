@@ -4,7 +4,7 @@
 void redblack_tree_init(redblack_tree *t,
 		redblack_tree_node * (*allocate_node)(void *item),
 		void (*free_node)(redblack_tree_node * ),
-		int (*compare_items)(void * , void * ))
+		int64_t (*compare_items)(void * , void * ))
 {
 	t->root = NULL;
 	t->allocate_node = allocate_node;
@@ -48,7 +48,7 @@ int redblack_tree_find(redblack_tree *t,
 		       void *context)
 {
 	redblack_tree_node *node;
-	int res;
+	int64_t res;
 
 	node = t->root;
 
@@ -61,7 +61,8 @@ int redblack_tree_find(redblack_tree *t,
 		} else if (res > 0) {
 			node = node->right;
 		} else {
-			visitor(node, context);
+			if (visitor)
+				visitor(node, context);
 			return 1;
 		}
 
@@ -217,8 +218,8 @@ static uint32_t redblack_tree_height_node(redblack_tree_node *node)
 {
 	if (!node)
 		return 0;
-	return 1 + rbt_max(redblack_tree_height_node(node->left),
-			   redblack_tree_height_node(node->right));
+	return 1 + redblack_tree_max(redblack_tree_height_node(node->left),
+				     redblack_tree_height_node(node->right));
 }
 
 uint32_t redblack_tree_height(redblack_tree *t)

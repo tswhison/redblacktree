@@ -24,8 +24,8 @@ static inline void redblack_tree_insert_repair_case_4_2(redblack_tree_node **roo
 	redblack_tree_node *p = parent(n);
 	redblack_tree_node *gp = parent(p);
 
-	rbt_assert(p);
-	rbt_assert(gp);
+	redblack_tree_assert(p);
+	redblack_tree_assert(gp);
 
 	if (n == p->left)
 		ror(root, gp);
@@ -90,7 +90,7 @@ static void redblack_tree_insert_repair(redblack_tree_node **root,
 */
 		redblack_tree_node *gp = parent(p);
 
-		rbt_assert(gp);
+		redblack_tree_assert(gp);
 
 		if (gp->left && n == gp->left->right) {
 			rol(root, p);
@@ -105,7 +105,7 @@ static void redblack_tree_insert_repair(redblack_tree_node **root,
 
 int redblack_tree_insert(redblack_tree *t, void *item)
 {
-	int res;
+	int64_t res;
 	int inserted = 0;
 	redblack_tree_node **node;
 	redblack_tree_node *parent;

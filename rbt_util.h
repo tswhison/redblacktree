@@ -2,27 +2,31 @@
 #define __RBT_UTIL_H__
 #include <stdio.h>
 
-#define rbt_assert(__expr)                                         \
-do                                                                 \
-{                                                                  \
-	if (!(__expr)) {                                           \
-		fprintf(stderr, "%s:%d rbt_assert( %s ) failed\n", \
-				__FILE__, __LINE__, #__expr);      \
-	}                                                          \
+#if 1
+#define redblack_tree_assert(__expr)
+#else
+#define redblack_tree_assert(__expr)                                         \
+do                                                                           \
+{                                                                            \
+	if (!(__expr)) {                                                     \
+		fprintf(stderr, "%s:%d redblack_tree_assert( %s ) failed\n", \
+				__FILE__, __LINE__, #__expr);                \
+	}                                                                    \
 }while(0)
+#endif
 
-#define rbt_max(__a, __b)          \
-({                                 \
-	typeof(__a) ___a = __a;    \
-	typeof(__b) ___b = __b;    \
-	___a > ___b ? ___a : ___b; \
+#define redblack_tree_max(__a, __b) \
+({                                  \
+	typeof(__a) ___a = __a;     \
+	typeof(__b) ___b = __b;     \
+	___a > ___b ? ___a : ___b;  \
 })
 
-#define rbt_min(__a, __b)          \
-({                                 \
-	typeof(__a) ___a = __a;    \
-	typeof(__b) ___b = __b;    \
-	___a < ___b ? ___a : ___b; \
+#define redblack_tree_min(__a, __b) \
+({                                  \
+	typeof(__a) ___a = __a;     \
+	typeof(__b) ___b = __b;     \
+	___a < ___b ? ___a : ___b;  \
 })
 
 static inline redblack_tree_color color(redblack_tree_node *n)
@@ -82,7 +86,7 @@ static inline redblack_tree_node * rol(redblack_tree_node **root,
 		return NULL;
 
 	nnew = n->right;
-	rbt_assert(nnew != NULL);
+	redblack_tree_assert(nnew != NULL);
 	p = parent(n);
 	n->right = nnew->left;
 	nnew->left = n;
@@ -93,7 +97,7 @@ static inline redblack_tree_node * rol(redblack_tree_node **root,
 		if (n == p->left)
 			p->left = nnew;
 		else {
-			rbt_assert(n == p->right);
+			redblack_tree_assert(n == p->right);
 			p->right = nnew;
 		}
 	}
@@ -123,7 +127,7 @@ static inline redblack_tree_node * ror(redblack_tree_node **root,
 		return NULL;
 
 	nnew = n->left;
-	rbt_assert(nnew != NULL);
+	redblack_tree_assert(nnew != NULL);
 	p = parent(n);
 	n->left = nnew->right;
 	nnew->right = n;
@@ -134,7 +138,7 @@ static inline redblack_tree_node * ror(redblack_tree_node **root,
 		if (n == p->left)
 			p->left = nnew;
 		else {
-			rbt_assert(n == p->right);
+			redblack_tree_assert(n == p->right);
 			p->right = nnew;
 		}
 	}
@@ -146,20 +150,20 @@ static inline redblack_tree_node * ror(redblack_tree_node **root,
 
 static inline int is_leaf(redblack_tree_node *n)
 {
-	rbt_assert(n);
+	redblack_tree_assert(n);
 	return (n->left == NULL) && (n->right == NULL);
 }
 
 static inline int is_internal(redblack_tree_node *n)
 {
-	rbt_assert(n);
+	redblack_tree_assert(n);
 	return (n->left != NULL) && (n->right != NULL);
 }
 
 static inline redblack_tree_node * successor(redblack_tree_node *n)
 {
-	rbt_assert(n);
-	rbt_assert(n->right);
+	redblack_tree_assert(n);
+	redblack_tree_assert(n->right);
 	n = n->right;
 	while (n->left)
 		n = n->left;

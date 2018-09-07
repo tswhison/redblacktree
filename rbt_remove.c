@@ -109,7 +109,7 @@ static void redblack_tree_remove_node(redblack_tree *t,
 				      redblack_tree_node *node,
 				      int *removed)
 {
-	int res;
+	int64_t res;
 	redblack_tree_node *child;
 
 	while (node) {

@@ -22,13 +22,13 @@ typedef struct _redblack_tree {
 	redblack_tree_node *root;
 	redblack_tree_node * (*allocate_node)(void *item);
 	void (*free_node)(redblack_tree_node * );
-	int (*compare_items)(void * , void * );
+	int64_t (*compare_items)(void * , void * );
 } redblack_tree;
 
 void redblack_tree_init(redblack_tree *t,
 		redblack_tree_node * (*allocate_node)(void *item),
 		void (*free_node)(redblack_tree_node * ),
-		int (*compare_items)(void * , void * ));
+		int64_t (*compare_items)(void * , void * ));
 
 void redblack_tree_destroy(redblack_tree *t);
 
