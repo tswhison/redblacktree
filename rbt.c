@@ -4,12 +4,16 @@
 void redblack_tree_init(redblack_tree *t,
 		redblack_tree_node * (*allocate_node)(void *item),
 		void (*free_node)(redblack_tree_node * ),
-		int64_t (*compare_items)(void * , void * ))
+		int64_t (*compare_items)(void * , void * ),
+		redblack_queue_entry * (*allocate_entry)(redblack_tree_node * ),
+		void (*free_entry)(redblack_queue_entry * ))
 {
 	t->root = NULL;
 	t->allocate_node = allocate_node;
 	t->free_node = free_node;
 	t->compare_items = compare_items;
+	t->allocate_entry = allocate_entry;
+	t->free_entry = free_entry;
 }
 
 static void redblack_tree_destroy_node(redblack_tree *t, redblack_tree_node *node)
@@ -136,18 +140,14 @@ void redblack_tree_post_order(redblack_tree *t,
 	redblack_tree_post_order_node(t, visitor, context, t->root);
 }
 
-typedef struct _redblack_queue_entry {
-	redblack_tree_node *node;
-	struct _redblack_queue_entry *next;
-} redblack_queue_entry;
-
-static void redblack_add_queue_entry(redblack_tree_node *node, redblack_queue_entry **queue_head)
+static void redblack_add_queue_entry(redblack_tree *t,
+				     redblack_tree_node *node,
+				     redblack_queue_entry **queue_head)
 {
 	redblack_queue_entry *entry;
 
-	entry = (redblack_queue_entry *) malloc(sizeof(redblack_queue_entry));
+	entry = t->allocate_entry(node);
 
-	entry->node = node;
 	entry->next = NULL;
 
 	if (*queue_head == NULL) {
@@ -170,7 +170,7 @@ static void redblack_tree_level_order_node(redblack_tree *t,
 	if (!node)
 		return;
 
-	redblack_add_queue_entry(node, &queue_array[level]);
+	redblack_add_queue_entry(t, node, &queue_array[level]);
 
 	redblack_tree_level_order_node(t, node->left, queue_array, level+1);
 	redblack_tree_level_order_node(t, node->right, queue_array, level+1);
@@ -207,7 +207,7 @@ void redblack_tree_level_order(redblack_tree *t,
 
 			trash = entry;
 			entry = entry->next;
-			free(trash);
+			t->free_entry(trash);
 		}
 	}
 

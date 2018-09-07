@@ -21,9 +21,24 @@ redblack_tree_node * null_allocate_redblack_node(void *item)
 	return NULL;
 }
 
+redblack_queue_entry * my_allocate_redblack_entry(redblack_tree_node *node)
+{
+	redblack_queue_entry *entry = (redblack_queue_entry *)
+				malloc(sizeof(redblack_queue_entry));
+	if (entry)
+		entry->node = node;
+
+	return entry;
+}
+
 void my_free_redblack_node(redblack_tree_node *node)
 {
 	free(node);
+}
+
+void my_free_redblack_entry(redblack_queue_entry *entry)
+{
+	free(entry);
 }
 
 int64_t my_int_compare(void *a, void *b)
@@ -201,7 +216,9 @@ void insert_and_remove_stress(void)
 	redblack_tree_init(&t, 
 		      my_allocate_redblack_node,
 		      my_free_redblack_node,
-		      my_int_compare);
+		      my_int_compare,
+		      my_allocate_redblack_entry,
+		      my_free_redblack_entry);
 
 	for (j = 0 ; j < repetitions ; ++j) {
 		for (num_items = 1 ; num_items < max_items ; ++num_items) {
@@ -391,7 +408,9 @@ void other_coverage(void)
 	redblack_tree_init(&t, 
 		      my_allocate_redblack_node,
 		      my_free_redblack_node,
-		      my_int_compare);
+		      my_int_compare,
+		      my_allocate_redblack_entry,
+		      my_free_redblack_entry);
 	assert(!t.root);
 
 	redblack_tree_destroy(&t);

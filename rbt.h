@@ -18,17 +18,27 @@ typedef struct _redblack_tree_node {
 	int8_t color;
 } redblack_tree_node;
 
+// for level-order traverse
+typedef struct _redblack_queue_entry {
+	redblack_tree_node *node;
+	struct _redblack_queue_entry *next;
+} redblack_queue_entry;
+
 typedef struct _redblack_tree {
 	redblack_tree_node *root;
 	redblack_tree_node * (*allocate_node)(void *item);
 	void (*free_node)(redblack_tree_node * );
 	int64_t (*compare_items)(void * , void * );
+	redblack_queue_entry * (*allocate_entry)(redblack_tree_node * );
+	void (*free_entry)(redblack_queue_entry * );
 } redblack_tree;
 
 void redblack_tree_init(redblack_tree *t,
 		redblack_tree_node * (*allocate_node)(void *item),
 		void (*free_node)(redblack_tree_node * ),
-		int64_t (*compare_items)(void * , void * ));
+		int64_t (*compare_items)(void * , void * ),
+		redblack_queue_entry * (*allocate_entry)(redblack_tree_node * ),
+		void (*free_entry)(redblack_queue_entry * ));
 
 void redblack_tree_destroy(redblack_tree *t);
 
