@@ -1,3 +1,21 @@
+/*
+** rbt.c : implementation of Red-Black Trees
+** Copyright (C) 2018  Tim Whisonant
+**
+** This program is free software; you can redistribute it and/or
+** modify it under the terms of the GNU General Public License
+** as published by the Free Software Foundation; either version 2
+** of the License, or (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 #include "rbt.h"
 #include "rbt_util.h"
 
@@ -46,10 +64,8 @@ uint32_t redblack_tree_num_items(redblack_tree *t)
 	return redblack_tree_num_items_node(t->root);
 }
 
-int redblack_tree_find(redblack_tree *t,
-		       void *item,
-		       void (*visitor)(redblack_tree_node *node, void *context),
-		       void *context)
+redblack_tree_node * redblack_tree_find(redblack_tree *t,
+					void *item)
 {
 	redblack_tree_node *node;
 	int64_t res;
@@ -65,14 +81,12 @@ int redblack_tree_find(redblack_tree *t,
 		} else if (res > 0) {
 			node = node->right;
 		} else {
-			if (visitor)
-				visitor(node, context);
-			return 1;
+			return node;
 		}
 
 	}
 
-	return 0;
+	return NULL;
 }
 
 static void redblack_tree_pre_order_node(redblack_tree *t,

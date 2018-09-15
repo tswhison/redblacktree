@@ -1,3 +1,21 @@
+/*
+** main.c : test program for Red-Black Trees
+** Copyright (C) 2018  Tim Whisonant
+**
+** This program is free software; you can redistribute it and/or
+** modify it under the terms of the GNU General Public License
+** as published by the Free Software Foundation; either version 2
+** of the License, or (at your option) any later version.
+**
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
+**
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the Free Software
+** Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -376,13 +394,6 @@ void test_rbt_util(void)
 	assert(root == &D);
 }
 
-void null_visitor(redblack_tree_node *node, void *context)
-{
-	int *called = (int *) context;
-	(void) node;
-	*called = 1;
-}
-
 typedef struct _visit_sequence {
 	int i;
 	int item_sequence[3];
@@ -404,8 +415,8 @@ void sequence_visitor_level(redblack_tree_node *node, void *context, int level)
 void other_coverage(void)
 {
 	redblack_tree t;
+	redblack_tree_node *n;
 	visit_sequence seq;
-	int called = 0;
 	int i;
 
 	redblack_tree_init(&t, 
@@ -419,9 +430,7 @@ void other_coverage(void)
 	redblack_tree_destroy(&t);
 	assert(!t.root);
 	assert(0 == redblack_tree_num_items(&t));
-	called = 0;
-	assert(!redblack_tree_find(&t, (void *) 1, null_visitor, &called));
-	assert(!called);
+	assert(!redblack_tree_find(&t, (void *) 1));
 	assert(0 == redblack_tree_height(&t));
 
 	seq.i = 0;
@@ -438,18 +447,20 @@ void other_coverage(void)
 	// duplicates not allowed
 	assert(!redblack_tree_insert(&t, (void *) 0));
 	assert(3 == redblack_tree_num_items(&t));
-	assert(redblack_tree_find(&t, (void *) 2, NULL, NULL));
-	assert(!redblack_tree_find(&t, (void *) 3, NULL, NULL));
+	n = redblack_tree_find(&t, (void *) 2);
+	assert(n);
+	assert(n->item == (void *) 2);
+	assert(!redblack_tree_find(&t, (void *) 3));
 
-	called = 0;
-	assert(redblack_tree_find(&t, (void *) 0, null_visitor, &called));
-	assert(called);
-	called = 0;
-	assert(redblack_tree_find(&t, (void *) 1, null_visitor, &called));
-	assert(called);
-	called = 0;
-	assert(redblack_tree_find(&t, (void *) 2, null_visitor, &called));
-	assert(called);
+	n = redblack_tree_find(&t, (void *) 0);
+	assert(n);
+	assert(n->item == (void *) 0);
+	n = redblack_tree_find(&t, (void *) 1);
+	assert(n);
+	assert(n->item == (void *) 1);
+	n = redblack_tree_find(&t, (void *) 2);
+	assert(n);
+	assert(n->item == (void *) 2);
 
 	// test pre-order traversal
 	seq.i = 0;
